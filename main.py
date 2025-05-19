@@ -1,17 +1,17 @@
 import streamlit as st
 from datetime import date
-from paper_generator import PaperGenerator
+from hf_api_backend import HFAPIBackend
 
-st.set_page_config(page_title="AI Agent for Academic Research", layout="wide")
+st.set_page_config(page_title="AltierX - AI Academic Research Assistant", layout="wide")
 
 # Sidebar
 with st.sidebar:
-    st.header("Your AI Academic Research Assistant")
+    st.header("AltierX: Your AI Academic Research Assistant")
     st.write("AI-Powered Paper Generation")
     st.text_input("Search for academic papers, journals, or information...")
     st.button("Search")
     st.markdown("**About**")
-    st.info("This tool generates a personalized academic research paper based on your inputs. Fill in the form and let our specialized agents craft your paper!")
+    st.info("AltierX generates personalized academic research papers based on your inputs. Fill in the form and let our specialized agents craft your paper!")
     st.markdown("**How it works**")
     st.markdown("""
     1. Enter your research details  
@@ -22,8 +22,8 @@ with st.sidebar:
     """)
 
 # Main
-st.title("Your AI Agent for Academic Research")
-st.subheader("Generate your personalized research paper with AI-powered academic agents.")
+st.title("AltierX: AI Agent for Academic Research")
+st.subheader("Generate your personalized research paper with AltierX's AI-powered academic agents.")
 
 with st.form("paper_form"):
     st.write("### Generate Your Research Paper")
@@ -43,7 +43,7 @@ with st.form("paper_form"):
 
 if submitted:
     st.info("Generating your research paper... (this may take a while)")
-    generator = PaperGenerator()
+    generator = HFAPIBackend()
     outline = generator.generate_outline(topic, keywords)
     st.markdown("#### Paper Outline")
     st.markdown(outline)
