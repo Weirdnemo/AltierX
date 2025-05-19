@@ -7,6 +7,17 @@ from local_backend import LocalLLMBackend
 
 st.set_page_config(page_title="AltierX - AI Academic Research Assistant", layout="wide", initial_sidebar_state="expanded")
 
+# Hardware warning
+st.markdown(
+    """
+    <div style='background: #ffcccc; color: #900; padding: 1em; border-radius: 10px; margin-bottom: 1.5em; text-align: center; font-size: 1.1em;'>
+        <b>⚠️ AltierX requires a high-end PC (16GB+ RAM, 8GB+ VRAM recommended).<br>
+        On low-end systems, the app may crash, freeze, or fail to load large models.</b>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 # Hero Section
 st.markdown(
     """
@@ -84,7 +95,4 @@ with tab3:
     - No cloud. No API keys.  
     - All computation is local and private.
     - Built with ❤️ using Streamlit and Hugging Face Transformers.
-    """)
-
-# Show a warning if hot reload is off
-st.warning("Hot reload is disabled for stability. Please manually refresh the page after code changes.", icon="⚠️") 
+    """) 
