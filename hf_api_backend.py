@@ -2,7 +2,7 @@ import os
 import requests
 
 HF_API_TOKEN = os.getenv("HF_API_TOKEN")
-API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
+API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
 HEADERS = {"Authorization": f"Bearer {HF_API_TOKEN}"}
 
 class HFAPIBackend:
@@ -23,7 +23,7 @@ class HFAPIBackend:
         result = response.json()
         if isinstance(result, dict) and "error" in result:
             raise RuntimeError(result["error"])
-        return result[0]["generated_text"] if isinstance(result, list) else result["generated_text"]
+        return result[0]["summary_text"] if isinstance(result, list) and "summary_text" in result[0] else result[0].get("generated_text", "")
 
     def generate_outline(self, topic, keywords=None):
         """Generate a research paper outline using AltierX."""
@@ -41,7 +41,8 @@ Topic: {topic}
 Keywords: {keywords if keywords else ''}
 Instructions: {instructions if instructions else ''}
 
-{section_name}:"""
+{section_name}:
+"""
         return self.query(prompt, max_length=512)
 
     def generate_full_paper(self, topic, title, keywords=None, instructions=None):
