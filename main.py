@@ -1,74 +1,90 @@
 import streamlit as st
+import platform
+import torch
+import psutil
 from datetime import date
 from local_backend import LocalLLMBackend
 
 st.set_page_config(page_title="AltierX - AI Academic Research Assistant", layout="wide", initial_sidebar_state="expanded")
 
-# Sidebar
+# Hero Section
+st.markdown(
+    """
+    <div style='background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%); padding: 2em 1em; border-radius: 12px; margin-bottom: 2em; color: #fff; text-align: center;'>
+        <h1 style='margin-bottom: 0.2em;'>AltierX</h1>
+        <h3 style='margin-top: 0;'>Your Offline AI Agent for Academic Research</h3>
+        <p>Generate outlines, sections, and full research papers with state-of-the-art local LLMs. <b>No cloud. No data leaves your machine.</b></p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Sidebar: System Status
 with st.sidebar:
-    st.header("AltierX: Your AI Academic Research Assistant 🧑‍💻")
+    st.header("System Status")
+    st.write(f"**Model:** mistralai/Mistral-7B-Instruct-v0.2")
+    st.write(f"**Device:** {'GPU' if torch.cuda.is_available() else 'CPU'}")
+    st.write(f"**Python:** {platform.python_version()}")
+    st.write(f"**PyTorch:** {torch.__version__}")
+    st.write(f"**RAM:** {round((psutil.virtual_memory().total/1e9), 1)} GB")
+    st.write(f"**VRAM:** {torch.cuda.get_device_properties(0).total_memory/1e9:.1f} GB" if torch.cuda.is_available() else "N/A")
+    st.markdown("---")
+    st.info("Hot reload is disabled for stability. Please manually refresh the page after code changes.")
+
+# Tabs for workflow
+tab1, tab2, tab3 = st.tabs(["📝 Generate Paper", "ℹ️ How it Works", "📖 About AltierX"])
+
+with tab1:
+    with st.form("paper_form"):
+        st.subheader("Generate Your Research Paper")
+        col1, col2 = st.columns(2)
+        with col1:
+            topic = st.text_input("Research Topic", placeholder="e.g., Deep Learning in Healthcare")
+            title = st.text_input("Paper Title", placeholder="e.g., Advances in Deep Learning for Medical Diagnosis")
+            due_date = st.date_input("Due Date", value=date.today())
+            instructions = st.text_area("Additional Instructions", placeholder="Any additional instructions or requirements…")
+        with col2:
+            length = st.slider("Paper Length (pages)", 5, 50, 10)
+            paper_type = st.selectbox("Paper Type", ["Journal", "Conference", "Thesis"])
+            style = st.selectbox("Writing Style", ["Formal", "Informal"])
+            keywords = st.text_input("Keywords/Focus (comma separated)")
+        submitted = st.form_submit_button("🚀 Generate My Research Paper")
+
+    if submitted:
+        st.info("Generating your research paper... This may take a while, especially on CPU.")
+        generator = LocalLLMBackend()
+        with st.spinner("Generating outline..."):
+            outline = generator.generate_outline(topic, keywords)
+        st.success("Outline generated!")
+        st.markdown(f"<div style='background:#222;padding:1em;border-radius:8px;color:#fff'>{outline}</div>", unsafe_allow_html=True)
+        st.markdown("---")
+        st.markdown("#### Generated Paper (Section by Section)")
+        sections = ["Introduction", "Literature Review", "Methodology", "Results and Discussion", "Conclusion"]
+        paper = ""
+        for section in sections:
+            with st.spinner(f"Generating {section}..."):
+                section_text = generator.generate_section(section, topic, title, keywords, instructions)
+                st.markdown(f"**{section}:**")
+                st.markdown(f"<div style='background:#f8f9fa;padding:1em;border-radius:8px'>{section_text}</div>", unsafe_allow_html=True)
+                paper += f"\n\n## {section}\n{section_text}"
+        st.success("Your research paper is ready!")
+        st.download_button("Download Paper", paper, file_name="research_paper.txt")
+
+with tab2:
     st.markdown("""
-    <style>
-    .sidebar-content {font-size: 1.1em;}
-    </style>
-    """, unsafe_allow_html=True)
-    st.write("AI-Powered Paper Generation")
-    st.text_input("Search for academic papers, journals, or information...")
-    st.button("Search")
-    st.markdown("**About**")
-    st.info("AltierX generates personalized academic research papers based on your inputs. Fill in the form and let our specialized agents craft your paper!")
-    st.markdown("**How it works**")
-    st.markdown("""
-    1. Enter your research details  
-    2. AI conducts literature research  
-    3. Generate a paper outline  
-    4. Draft and edit your paper  
-    5. Download your final paper  
+    1. Enter your research details in the form.
+    2. AltierX generates an outline and each section using a local LLM.
+    3. Download your full paper as a text file.
+    4. All processing is offline—your data never leaves your machine.
     """)
-    st.markdown("---")
-    st.markdown("**Model:** mistralai/Mistral-7B-Instruct-v0.2 (local)")
-    st.markdown("**Device:** " + ("GPU" if st.runtime.exists() and st.runtime.get_instance()._is_running_with_streamlit and hasattr(st, 'cuda') and st.cuda.is_available() else "CPU"))
-    st.markdown("---")
-    st.caption("AltierX is fully offline. All data stays on your machine.")
 
-# Main
-st.title("AltierX: AI Agent for Academic Research 🧑‍💻")
-st.subheader("Generate your personalized research paper with AltierX's AI-powered academic agents.")
+with tab3:
+    st.markdown("""
+    **AltierX** is a fully offline, open-source academic research assistant powered by state-of-the-art local language models.  
+    - No cloud. No API keys.  
+    - All computation is local and private.
+    - Built with ❤️ using Streamlit and Hugging Face Transformers.
+    """)
 
-with st.form("paper_form"):
-    st.write("### Generate Your Research Paper")
-    col1, col2 = st.columns(2)
-    with col1:
-        topic = st.text_input("Research Topic", placeholder="e.g., Deep Learning in Healthcare")
-        title = st.text_input("Paper Title", placeholder="e.g., Advances in Deep Learning for Medical Diagnosis")
-        due_date = st.date_input("Due Date", value=date.today())
-        instructions = st.text_area("Additional Instructions", placeholder="Any additional instructions or requirements…")
-    with col2:
-        length = st.slider("Paper Length (pages)", 5, 50, 10)
-        paper_type = st.selectbox("Paper Type", ["Journal", "Conference", "Thesis"])
-        style = st.selectbox("Writing Style", ["Formal", "Informal"])
-        keywords = st.text_input("Keywords/Focus (comma separated)")
-    include_refs = st.checkbox("Include web search for latest references (not available in offline mode)", value=False, disabled=True)
-    submitted = st.form_submit_button("Generate My Research Paper")
-
-if submitted:
-    st.info("Generating your research paper... This may take a while, especially on CPU.")
-    generator = LocalLLMBackend()
-    with st.spinner("Generating outline..."):
-        outline = generator.generate_outline(topic, keywords)
-    st.markdown("#### Paper Outline")
-    st.markdown(f"<div style='background:#222;padding:1em;border-radius:8px;color:#fff'>{outline}</div>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.markdown("#### Generated Paper (Section by Section)")
-    sections = ["Introduction", "Literature Review", "Methodology", "Results and Discussion", "Conclusion"]
-    paper = ""
-    for section in sections:
-        with st.spinner(f"Generating {section}..."):
-            section_text = generator.generate_section(section, topic, title, keywords, instructions)
-            st.markdown(f"**{section}:**")
-            st.markdown(f"<div style='background:#f8f9fa;padding:1em;border-radius:8px'>{section_text}</div>", unsafe_allow_html=True)
-            paper += f"\n\n## {section}\n{section_text}"
-    st.success("Your research paper is ready!")
-    st.markdown("---")
-    st.markdown("#### Download Full Paper")
-    st.download_button("Download Paper", paper, file_name="research_paper.txt") 
+# Show a warning if hot reload is off
+st.warning("Hot reload is disabled for stability. Please manually refresh the page after code changes.", icon="⚠️") 
