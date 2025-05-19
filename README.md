@@ -30,7 +30,7 @@ AltierX is a modern, AI-powered academic research assistant. Generate high-quali
 
 ## Hardware Requirements
 - **RAM:** 16GB minimum (32GB+ recommended)
-- **VRAM:** 8GB+ (for GPU acceleration; otherwise runs on CPU)
+- **VRAM:** 8GB+ (for GPU acceleration; otherwise runs on CPU(!! BAD IDEA !!))
 - **Disk:** ~15GB free (for model download)
 - **OS:** Linux, macOS, or Windows
 
